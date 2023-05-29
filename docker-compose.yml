@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  server:
+    build:
+      context: .
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    command: npm start
+    entrypoint: ./docker-entrypoint.sh
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongodb
+    environment:
+      NODE_ENV: development
+  mongodb:
+    image: mongo:5.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongo_pass
+    ports:
+      - '27018:27017'
+
+volumes:
+  node_modules:
