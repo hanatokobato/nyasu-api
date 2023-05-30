@@ -7,9 +7,11 @@ import { decksRouter } from './routes/decks';
 import { errorHandler } from './middlewares/error-handler';
 import { AppError } from './utils/app-error';
 import mongoose from 'mongoose';
+import cors from 'cors';
 
 const app = express();
 app.use(json());
+app.use(cors({ origin: '*' }));
 
 app.use('/api/v1/decks', decksRouter);
 
