@@ -6,7 +6,6 @@ interface IErrorResponse {
     message: string;
     field?: string;
   }[];
-  stack?: string;
 }
 
 export const errorHandler = (
@@ -21,8 +20,8 @@ export const errorHandler = (
 
   if (process.env.NODE_ENV === 'development') {
     console.log(err.stack);
-    jsonResponse = { ...jsonResponse, stack: err.stack };
+    jsonResponse = { ...jsonResponse };
   }
 
-  res.status(err.statusCode).json(jsonResponse);
+  res.status(err.statusCode || 500).json(jsonResponse);
 };
