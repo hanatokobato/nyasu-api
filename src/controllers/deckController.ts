@@ -3,7 +3,7 @@ import { Deck } from '../models/deck';
 import { catchAsync } from '../utils/catchAsync';
 
 const deckParams = (req: Request) => {
-  const allowedFields = ['name'];
+  const allowedFields = ['name', 'description'];
   const permittedParams: { [key: string]: any } = {};
   Object.keys(req.body).forEach((el) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
@@ -53,6 +53,7 @@ const updateDeck = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const deck = await Deck.findByIdAndUpdate(req.params.id, deckParams(req), {
       new: true,
+      runValidators: true,
     });
 
     res.status(202).json({
