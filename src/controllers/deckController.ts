@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Deck } from '../models/deck';
 import { catchAsync } from '../utils/catchAsync';
+import { upload } from '../utils/upload';
 
 const deckParams = (req: Request) => {
   const allowedFields = ['name', 'description'];
@@ -8,6 +9,9 @@ const deckParams = (req: Request) => {
   Object.keys(req.body).forEach((el) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
   });
+  if (req.file) {
+    permittedParams['photo'] = req.file.filename;
+  }
   return permittedParams;
 };
 
@@ -73,4 +77,13 @@ const deleteDeck = catchAsync(
   }
 );
 
-export { getDecks, showDeck, createDeck, updateDeck, deleteDeck };
+const uploadDeckPhoto = upload.single('photo');
+
+export {
+  getDecks,
+  showDeck,
+  createDeck,
+  updateDeck,
+  deleteDeck,
+  uploadDeckPhoto,
+};

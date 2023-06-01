@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 
 const app = express();
+app.use(express.static('files'));
 app.use(json());
 app.use(cors({ origin: '*' }));
 
