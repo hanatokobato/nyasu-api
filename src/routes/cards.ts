@@ -6,16 +6,19 @@ const router = express.Router();
 router
   .route('/')
   .get(cardsController.getCards)
-  .post(cardsController.createCard);
+  .post(cardsController.uploadAudioAttachment, cardsController.createCard);
 
 router
   .route('/:id')
   .get(cardsController.showCard)
-  .put(cardsController.updateCard)
+  .put(cardsController.uploadAudioAttachment, cardsController.updateCard)
   .delete(cardsController.deleteCard);
 
 router
   .route('/attachments')
-  .post(cardsController.uploadAttachment, cardsController.createAttachment);
+  .post(
+    cardsController.uploadImageAttachment,
+    cardsController.createAttachment
+  );
 
 export { router as cardsRouter };

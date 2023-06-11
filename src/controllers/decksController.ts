@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { NextFunction, Request, Response } from 'express';
 import { Deck } from '../models/deck';
 import { catchAsync } from '../utils/catchAsync';
-import { upload } from '../utils/upload';
+import { uploadImage } from '../utils/upload';
 
 const deckParams = (req: Request) => {
   const allowedFields = ['name', 'description'];
@@ -98,7 +98,7 @@ const resizePhoto = catchAsync(
   }
 );
 
-const uploadDeckPhoto = upload.single('photo');
+const uploadDeckPhoto = uploadImage.single('photo');
 
 export {
   getDecks,
