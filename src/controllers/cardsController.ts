@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { NextFunction, Request, Response } from 'express';
 import { Card } from '../models/card';
 import { catchAsync } from '../utils/catchAsync';
-import { upload } from '../utils/upload';
+import { uploadImage, uploadAudio } from '../utils/upload';
 
 const cardParams = (req: Request) => {
   const allowedFields = ['deck_id', 'content'];
@@ -11,6 +11,11 @@ const cardParams = (req: Request) => {
   Object.keys(req.body).forEach((el) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
   });
+  if (req.file) {
+    permittedParams['attachments'] = [
+      { alt: req.file.filename, file_url: req.file.filename },
+    ];
+  }
   return permittedParams;
 };
 
@@ -78,7 +83,8 @@ const deleteCard = catchAsync(
   }
 );
 
-const uploadAttachment = upload.single('file');
+const uploadImageAttachment = uploadImage.single('file');
+const uploadAudioAttachment = uploadAudio.single('file');
 
 const createAttachment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -110,6 +116,7 @@ export {
   createCard,
   updateCard,
   deleteCard,
-  uploadAttachment,
+  uploadImageAttachment,
   createAttachment,
+  uploadAudioAttachment,
 };
