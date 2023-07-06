@@ -6,7 +6,7 @@ import { catchAsync } from '../utils/catchAsync';
 import { uploadImage, uploadAudio } from '../utils/upload';
 
 const cardParams = (req: Request) => {
-  const allowedFields = ['deck_id', 'content'];
+  const allowedFields = ['deck_id', 'content', 'fields'];
   const permittedParams: { [key: string]: any } = {};
   Object.keys(req.body).forEach((el) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
