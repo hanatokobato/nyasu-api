@@ -7,7 +7,35 @@ const cardSchema = new mongoose.Schema(
       required: [true, 'Deck is required!'],
     },
     content: {
-      type: String,
+      front: {
+        type: String,
+        required: true,
+      },
+      back: {
+        type: String,
+      },
+    },
+    fields: {
+      word: {
+        type: String,
+        required: true,
+      },
+      translate: {
+        type: String,
+        required: true,
+      },
+      spelling: {
+        type: String,
+      },
+      example: {
+        sentence: {
+          type: String,
+          required: true,
+        },
+        translate: {
+          type: String,
+        },
+      },
     },
     attachments: [
       {
