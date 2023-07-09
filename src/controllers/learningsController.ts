@@ -3,7 +3,7 @@ import { catchAsync } from '../utils/catchAsync';
 import { Learning } from '../models/learning';
 
 const learningParams = (req: Request) => {
-  const allowedFields = ['card_id'];
+  const allowedFields = ['card_id', 'deck_id'];
   const permittedParams: { [key: string]: any } = {};
   Object.keys(req.body).forEach((el) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
