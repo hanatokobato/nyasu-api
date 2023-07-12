@@ -10,6 +10,7 @@ import { AppError } from './utils/app-error';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import { cardsRouter } from './routes/cards';
+import { learningRouter } from './routes/learnings';
 
 const app = express();
 app.use(express.static('files'));
@@ -19,6 +20,7 @@ app.use(cors({ origin: '*' }));
 
 app.use('/api/v1/decks', decksRouter);
 app.use('/api/v1/cards', cardsRouter);
+app.use('/api/v1/learnings', learningRouter);
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

@@ -23,7 +23,10 @@ const getDecks = catchAsync(
     const limit = Number(req.query.perPage) || 10;
     const skip = (page - 1) * limit;
 
-    const decks = await Deck.find().skip(skip).limit(limit);
+    const decks = await Deck.find()
+      .populate('learning')
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       status: 'success',
