@@ -6,10 +6,10 @@ const learningSchema = new mongoose.Schema(
     card_id: {
       type: Types.ObjectId,
       unique: true,
+      required: true,
     },
     deck_id: {
       type: Types.ObjectId,
-      unique: true,
     },
     added_at: {
       type: Date,
@@ -20,12 +20,14 @@ const learningSchema = new mongoose.Schema(
     next_review_at: {
       type: Date,
     },
+    remember_times: {
+      type: Number,
+    },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
 learningSchema.pre('validate', function (next) {
-  console.log(this.deck_id);
   if (this.card_id || this.deck_id) return next();
 
   next(new AppError('Must provide Card ID or Deck ID', 403));
