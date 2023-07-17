@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { Card } from '../models/card';
 import { catchAsync } from '../utils/catchAsync';
 import { uploadImage, uploadAudio } from '../utils/upload';
+import { random } from 'lodash';
 
 const cardParams = (req: Request) => {
   const allowedFields = ['deck_id', 'content', 'fields'];
@@ -33,6 +34,19 @@ const getCards = catchAsync(
       status: 'success',
       cards,
       page,
+    });
+  }
+);
+
+const randomCards = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const limit = Number(req.query.limit) || 3;
+
+    const cards = await Card.aggregate().sample(limit);
+
+    res.status(200).json({
+      status: 'success',
+      cards,
     });
   }
 );
@@ -119,4 +133,5 @@ export {
   uploadImageAttachment,
   createAttachment,
   uploadAudioAttachment,
+  randomCards,
 };
