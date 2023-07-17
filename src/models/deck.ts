@@ -25,6 +25,13 @@ deckSchema.virtual('photoUrl').get(function () {
     : `http://localhost:3000/img/decks/${this.photo}`;
 });
 
+deckSchema.virtual('learning', {
+  ref: 'Learning',
+  localField: '_id',
+  foreignField: 'deck_id',
+  justOne: true,
+});
+
 const Deck = mongoose.model('Deck', deckSchema);
 
 export { Deck };

@@ -8,6 +8,8 @@ router
   .get(cardsController.getCards)
   .post(cardsController.uploadAudioAttachment, cardsController.createCard);
 
+router.route('/random').get(cardsController.randomCards);
+
 router
   .route('/:id')
   .get(cardsController.showCard)
