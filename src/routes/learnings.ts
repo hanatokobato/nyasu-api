@@ -6,7 +6,8 @@ const router = express.Router();
 router
   .route('/')
   .post(learningsController.addLearning)
-  .get(learningsController.getLearnings);
+  .get(learningsController.getLearnings)
+  .put(learningsController.updateLearnings);
 
 router.route('/reviews').get(learningsController.getReviews);
 
