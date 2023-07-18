@@ -78,7 +78,7 @@ const getReviews = catchAsync(
 const addLearning = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const added_at = new Date();
-    const next_review_at = moment(added_at).add(30, 'm').toDate();
+    const next_review_at = moment(added_at).add(60, 'm').toDate();
     const params = {
       ...learningParams(req),
       added_at,
@@ -106,4 +106,44 @@ const addLearning = catchAsync(
   }
 );
 
-export { addLearning, getLearnings, getReviews };
+const editLearningsAttributes = async (cardIds: string[], isPassed = true) => {
+  const current = new Date();
+  const learnings = await Learning.find({
+    card_id: {
+      $in: cardIds,
+    },
+  });
+  return learnings.map((learning) => {
+    learning.last_reviewed_at = current;
+    learning.remember_times = isPassed
+      ? learning.remember_times + 1
+      : learning.remember_times - 1 || 1;
+    learning.next_review_at = moment(current)
+      .add(60 * learning.remember_times, 'm')
+      .toDate();
+
+    return learning;
+  });
+};
+
+const updateLearnings = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { passed_cards: passedCards, failed_cards: failedCards } = req.body;
+    const current = new Date();
+    let editedLearnings: any = [];
+    editedLearnings = editedLearnings.concat(
+      await editLearningsAttributes(passedCards, true)
+    );
+    editedLearnings = editedLearnings.concat(
+      await editLearningsAttributes(failedCards, false)
+    );
+
+    await Learning.bulkSave(editedLearnings);
+
+    res.status(204).json({
+      status: 'success',
+    });
+  }
+);
+
+export { addLearning, getLearnings, getReviews, updateLearnings };

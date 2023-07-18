@@ -22,6 +22,7 @@ const learningSchema = new mongoose.Schema(
     },
     remember_times: {
       type: Number,
+      required: true,
     },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
