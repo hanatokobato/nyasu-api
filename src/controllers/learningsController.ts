@@ -49,12 +49,16 @@ const getLearnings = catchAsync(
         $lte: current,
       },
     });
+    const upcoming = await Learning.findOne({}, null, {
+      sort: { next_review_at: 1 },
+    });
 
     res.status(200).json({
       status: 'success',
       word_levels: wordLevels,
       curr_review_count: currReviewCount,
       wait_review_count: waitReviewCount,
+      upcoming: upcoming?.next_review_at,
     });
   }
 );
