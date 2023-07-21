@@ -4,7 +4,6 @@ import { NextFunction, Request, Response } from 'express';
 import { Card } from '../models/card';
 import { catchAsync } from '../utils/catchAsync';
 import { uploadImage, uploadAudio } from '../utils/upload';
-import { random } from 'lodash';
 
 const cardParams = (req: Request) => {
   const allowedFields = ['deck_id', 'content', 'fields'];

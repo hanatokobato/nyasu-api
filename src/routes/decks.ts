@@ -1,11 +1,12 @@
 import express from 'express';
 import * as decksController from '../controllers/decksController';
+import * as authController from './../controllers/authController';
 
 const router = express.Router();
 
 router
   .route('/')
-  .get(decksController.getDecks)
+  .get(authController.protect, decksController.getDecks)
   .post(
     decksController.uploadDeckPhoto,
     decksController.resizePhoto,

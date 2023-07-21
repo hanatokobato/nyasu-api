@@ -1,11 +1,12 @@
 import express from 'express';
 import * as cardsController from './../controllers/cardsController';
+import * as authController from './../controllers/authController';
 
 const router = express.Router();
 
 router
   .route('/')
-  .get(cardsController.getCards)
+  .get(authController.protect, cardsController.getCards)
   .post(cardsController.uploadAudioAttachment, cardsController.createCard);
 
 router.route('/random').get(cardsController.randomCards);
