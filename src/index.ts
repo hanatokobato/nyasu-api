@@ -3,6 +3,7 @@ dotenv.config({ path: './.env' });
 import morgan from 'morgan';
 import express, { Request, Response, NextFunction } from 'express';
 import { json } from 'body-parser';
+import cookieSession from 'cookie-session';
 
 import { decksRouter } from './routes/decks';
 import { errorHandler } from './middlewares/error-handler';
@@ -11,16 +12,24 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import { cardsRouter } from './routes/cards';
 import { learningRouter } from './routes/learnings';
+import { authRouter } from './routes/auth';
 
 const app = express();
 app.use(express.static('files'));
 app.use(morgan('dev'));
 app.use(json());
+app.use(
+  cookieSession({
+    signed: false,
+    secure: process.env.NODE_ENV === 'production',
+  })
+);
 app.use(cors({ origin: '*' }));
 
 app.use('/api/v1/decks', decksRouter);
 app.use('/api/v1/cards', cardsRouter);
 app.use('/api/v1/learnings', learningRouter);
+app.use('/api/v1/auth', authRouter);
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
