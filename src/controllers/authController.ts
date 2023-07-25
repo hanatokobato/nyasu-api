@@ -91,6 +91,7 @@ const logout = (req: Request, res: Response) => {
 
 const protect = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.session)
     if (!req.session?.jwt)
       return next(new AppError('Please log in and try again!', 401));
 
