@@ -89,9 +89,12 @@ const logout = (req: Request, res: Response) => {
   res.status(200).json({ status: 'success' });
 };
 
+const currentUser = (req: Request, res: Response) => {
+  res.status(200).json({ status: 'success', data: { user: req.currentUser } });
+};
+
 const protect = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.session)
     if (!req.session?.jwt)
       return next(new AppError('Please log in and try again!', 401));
 
@@ -112,4 +115,4 @@ const protect = catchAsync(
   }
 );
 
-export { signup, login, logout, protect };
+export { signup, login, logout, protect, currentUser };
