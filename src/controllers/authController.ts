@@ -89,6 +89,10 @@ const logout = (req: Request, res: Response) => {
   res.status(200).json({ status: 'success' });
 };
 
+const currentUser = (req: Request, res: Response) => {
+  res.status(200).json({ status: 'success', data: { user: req.currentUser } });
+};
+
 const protect = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.session?.jwt)
@@ -111,4 +115,4 @@ const protect = catchAsync(
   }
 );
 
-export { signup, login, logout, protect };
+export { signup, login, logout, protect, currentUser };

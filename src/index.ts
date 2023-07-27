@@ -22,9 +22,15 @@ app.use(
   cookieSession({
     signed: false,
     secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000,
   })
 );
-app.use(cors({ origin: '*' }));
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.CORS_ORIGIN,
+  })
+);
 
 app.use('/api/v1/decks', decksRouter);
 app.use('/api/v1/cards', cardsRouter);
