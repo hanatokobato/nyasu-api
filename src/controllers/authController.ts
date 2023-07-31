@@ -5,23 +5,6 @@ import { catchAsync } from '../utils/catchAsync';
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../utils/app-error';
 
-interface IUserPayload {
-  id: string;
-  email: string;
-}
-
-interface IJwtPayload extends IUserPayload {
-  iat: number;
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      currentUser?: IUserPayload;
-    }
-  }
-}
-
 const signToken = (id: string, email: string) => {
   return jwt.sign({ id, email }, process.env.JWT_SECRET as Secret, {
     expiresIn: process.env.JWT_EXPIRES_IN,
