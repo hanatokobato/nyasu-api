@@ -88,6 +88,7 @@ const addLearning = catchAsync(
       added_at,
       next_review_at,
       remember_times: 1,
+      user_id: req.currentUser?.id,
     };
 
     if (params.deck_id && !params.card_id) {
@@ -95,7 +96,9 @@ const addLearning = catchAsync(
       const insertData = cards.map((card) => {
         return { ...params, card_id: card._id };
       });
-      await Learning.insertMany(insertData);
+      await Learning.insertMany(insertData, { ordered: false }).catch(
+        (e: any) => {}
+      );
     } else {
       await Learning.create({
         ...learningParams(req),

@@ -3,9 +3,12 @@ import { AppError } from '../utils/app-error';
 
 const learningSchema = new mongoose.Schema(
   {
+    user_id: {
+      type: Types.ObjectId,
+      required: true,
+    },
     card_id: {
       type: Types.ObjectId,
-      unique: true,
       required: true,
     },
     deck_id: {
@@ -40,6 +43,8 @@ learningSchema.virtual('card', {
   localField: 'card_id',
   justOne: true,
 });
+
+learningSchema.index({ user_id: 1, card_id: 1 }, { unique: true });
 
 const Learning = mongoose.model('Learning', learningSchema);
 
