@@ -78,11 +78,20 @@ const currentUser = (req: Request, res: Response) => {
 
 const protect = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.session?.jwt)
-      return next(new AppError('Please log in and try again!', 401));
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.session?.jwt) {
+      token = req.session.jwt;
+    }
+
+    if (!token) return next(new AppError('Please log in and try again!', 401));
 
     const decoded = (await promisify<string, Secret>(jwt.verify)(
-      req.session.jwt,
+      token,
       process.env.JWT_SECRET as Secret
     )) as unknown as IJwtPayload;
 

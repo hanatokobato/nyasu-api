@@ -15,6 +15,7 @@ import { learningRouter } from './routes/learnings';
 import { authRouter } from './routes/auth';
 
 const app = express();
+app.set('trust proxy', 'loopback');
 app.use(express.static('files'));
 app.use(morgan('dev'));
 app.use(json());
@@ -23,6 +24,7 @@ app.use(
     signed: false,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : false,
   })
 );
 app.use(
