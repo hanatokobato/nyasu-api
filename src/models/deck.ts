@@ -22,7 +22,7 @@ deckSchema.virtual('photoUrl').get(function () {
 
   return process.env.NODE_ENV === 'production'
     ? this.photo
-    : `http://localhost:3000/img/decks/${this.photo}`;
+    : `http://localhost:3000/${this.photo}`;
 });
 
 deckSchema.virtual('learning', {

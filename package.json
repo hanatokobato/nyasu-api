@@ -20,6 +20,7 @@
     "@types/mongoose": "^5.11.97",
     "@types/validator": "^13.7.17",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.40.0",
     "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -29,10 +30,11 @@
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "sharp": "^0.32.1",
     "ts-node-dev": "^2.0.0",
-    "validator": "^13.9.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "@types/morgan": "^1.9.4",

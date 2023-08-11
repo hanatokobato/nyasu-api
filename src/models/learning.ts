@@ -1,5 +1,5 @@
 import mongoose, { Types } from 'mongoose';
-import { AppError } from '../utils/app-error';
+import { AppError } from '../utils/appError';
 
 const learningSchema = new mongoose.Schema(
   {
