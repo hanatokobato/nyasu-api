@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import multer, { FileFilterCallback } from 'multer';
-import { AppError } from './app-error';
+import { storage as deckStorage } from '../storage/deckPhotoStorage';
+import { AppError } from './appError';
 
 enum FILE_TYPE {
   image = 'image',
@@ -43,4 +44,9 @@ const uploadAudio = multer({
   fileFilter: multerFilter(FILE_TYPE.audio),
 });
 
-export { uploadImage, uploadAudio };
+const uploadDeckPhoto = multer({
+  storage: deckStorage,
+  fileFilter: multerFilter(FILE_TYPE.image),
+});
+
+export { uploadImage, uploadAudio, uploadDeckPhoto };

@@ -3,7 +3,7 @@ import jwt, { Secret } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { catchAsync } from '../utils/catchAsync';
 import { NextFunction, Request, Response } from 'express';
-import { AppError } from '../utils/app-error';
+import { AppError } from '../utils/appError';
 
 const signToken = (id: string, email: string) => {
   return jwt.sign({ id, email }, process.env.JWT_SECRET as Secret, {

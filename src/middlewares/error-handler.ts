@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../utils/app-error';
+import { AppError } from '../utils/appError';
 
 interface IErrorResponse {
   errors: {

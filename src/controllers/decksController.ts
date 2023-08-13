@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { NextFunction, Request, Response } from 'express';
 import { Deck } from '../models/deck';
 import { catchAsync } from '../utils/catchAsync';
-import { uploadImage } from '../utils/upload';
+import { uploadDeckPhoto } from '../utils/upload';
 
 const deckParams = (req: Request) => {
   const allowedFields = ['name', 'description'];
@@ -12,7 +12,16 @@ const deckParams = (req: Request) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
   });
   if (req.file) {
-    permittedParams['photo'] = req.file.filename;
+    let filePath;
+    if (process.env.NODE_ENV === 'development') {
+      const splitedPath = req.file.path.split('/');
+      splitedPath.shift();
+      filePath = splitedPath.join('/');
+    } else {
+      filePath = req.file.path;
+    }
+
+    permittedParams['photo'] = filePath;
   }
   return permittedParams;
 };
@@ -84,24 +93,22 @@ const deleteDeck = catchAsync(
 
 const resizePhoto = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.file) return next();
+    if (!req.file || process.env.NODE_ENV !== 'development') return next();
 
-    req.file.filename = `${req.file.originalname}-${Date.now()}.jpeg`;
+    req.file.filename = `resized-${req.file.filename}`;
 
     if (!fs.existsSync(`files/img/decks`)) {
       fs.mkdirSync(`files/img/decks`, { recursive: true });
     }
-    await sharp(req.file.buffer)
+    await sharp(req.file.path)
       .resize(500, 500)
-      .toFormat('jpeg')
-      .jpeg({ quality: 90 })
       .toFile(`files/img/decks/${req.file.filename}`);
 
     next();
   }
 );
 
-const uploadDeckPhoto = uploadImage.single('photo');
+const uploadPhoto = uploadDeckPhoto.single('photo');
 
 export {
   getDecks,
@@ -110,5 +117,5 @@ export {
   updateDeck,
   deleteDeck,
   resizePhoto,
-  uploadDeckPhoto,
+  uploadPhoto as uploadDeckPhoto,
 };

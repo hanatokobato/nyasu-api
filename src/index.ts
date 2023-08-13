@@ -7,7 +7,7 @@ import cookieSession from 'cookie-session';
 
 import { decksRouter } from './routes/decks';
 import { errorHandler } from './middlewares/error-handler';
-import { AppError } from './utils/app-error';
+import { AppError } from './utils/appError';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import { cardsRouter } from './routes/cards';
