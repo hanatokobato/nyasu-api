@@ -4,6 +4,8 @@ import { NextFunction, Request, Response } from 'express';
 import { Card } from '../models/card';
 import { catchAsync } from '../utils/catchAsync';
 import { uploadCardPhoto, uploadCardAudio } from '../utils/upload';
+import { Learning } from '../models/learning';
+import mongoose from 'mongoose';
 
 const cardParams = (req: Request) => {
   const allowedFields = ['deck_id', 'content', 'fields'];
@@ -12,8 +14,16 @@ const cardParams = (req: Request) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
   });
   if (req.file) {
+    let filePath;
+    if (process.env.NODE_ENV === 'development') {
+      const splitedPath = req.file.path.split('/');
+      splitedPath.shift();
+      filePath = splitedPath.join('/');
+    } else {
+      filePath = req.file.path;
+    }
     permittedParams['attachments'] = [
-      { alt: req.file.filename, file_url: req.file.path },
+      { alt: req.file.filename, file_url: filePath },
     ];
   }
   return permittedParams;
@@ -42,6 +52,37 @@ const randomCards = catchAsync(
     const limit = Number(req.query.limit) || 3;
 
     const cards = await Card.aggregate().sample(limit);
+
+    res.status(200).json({
+      status: 'success',
+      cards,
+    });
+  }
+);
+
+const learningCards = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const limit = Number(req.query.limit) || 10;
+
+    const learnedCards = await Learning.find({
+      deck_id: req.query.deck_id,
+    }).select('card_id -_id');
+    const cards = await Card.aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              deck_id: new mongoose.Types.ObjectId(req.query.deck_id as string),
+            },
+            {
+              _id: {
+                $nin: learnedCards.map((c) => c.card_id),
+              },
+            },
+          ],
+        },
+      },
+    ]).sample(limit);
 
     res.status(200).json({
       status: 'success',
@@ -133,4 +174,5 @@ export {
   createAttachment,
   uploadAudioAttachment,
   randomCards,
+  learningCards,
 };

@@ -11,6 +11,8 @@ router
 
 router.route('/random').get(cardsController.randomCards);
 
+router.route('/learning').get(cardsController.learningCards);
+
 router
   .route('/:id')
   .get(cardsController.showCard)
