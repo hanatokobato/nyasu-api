@@ -51,8 +51,8 @@ deckSchema.virtual('cards', {
   foreignField: 'deck_id',
 });
 
-deckSchema.methods.learningCount = function (userId: string) {
-  return Learning.count({ deck_id: this.id, user_id: userId });
+deckSchema.methods.learningCount = async function (userId: string) {
+  return await Learning.count({ deck_id: this.id, user_id: userId });
 };
 
 const Deck = mongoose.model<DeckDoc, DeckModel>('Deck', deckSchema);
