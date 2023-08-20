@@ -1,4 +1,9 @@
-import mongoose, { Types } from 'mongoose';
+import mongoose, { Types, ObjectId } from 'mongoose';
+
+interface CardModel extends mongoose.Model<CardDoc> {}
+export interface CardDoc extends mongoose.Document {
+  id: ObjectId;
+}
 
 const cardSchema = new mongoose.Schema(
   {
@@ -56,9 +61,9 @@ cardSchema.virtual('audioUrl').get(function () {
 
   return process.env.NODE_ENV === 'production'
     ? this.attachments[0].file_url
-    : `http://localhost:3000/audio/cards/${this.attachments[0].file_url}`;
+    : `http://localhost:3000/${this.attachments[0].file_url}`;
 });
 
-const Card = mongoose.model('Card', cardSchema);
+const Card = mongoose.model<CardDoc, CardModel>('Card', cardSchema);
 
 export { Card };

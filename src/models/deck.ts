@@ -1,4 +1,17 @@
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
+import { Learning } from './learning';
+import { CardDoc } from './card';
+
+interface DeckModel extends mongoose.Model<DeckDoc> {}
+
+export interface DeckDoc extends mongoose.Document {
+  id: ObjectId;
+  name: string;
+  description: string;
+  photo: string;
+  cards: CardDoc[];
+  learningCount: (userId: string) => number;
+}
 
 const deckSchema = new mongoose.Schema(
   {
@@ -32,6 +45,16 @@ deckSchema.virtual('learning', {
   justOne: true,
 });
 
-const Deck = mongoose.model('Deck', deckSchema);
+deckSchema.virtual('cards', {
+  ref: 'Card',
+  localField: '_id',
+  foreignField: 'deck_id',
+});
+
+deckSchema.methods.learningCount = function (userId: string) {
+  return Learning.count({ deck_id: this.id, user_id: userId });
+};
+
+const Deck = mongoose.model<DeckDoc, DeckModel>('Deck', deckSchema);
 
 export { Deck };
