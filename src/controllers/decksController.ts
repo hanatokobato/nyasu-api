@@ -33,13 +33,15 @@ const getDecks = catchAsync(
     const skip = (page - 1) * limit;
 
     const decks = await Deck.find().populate('cards').skip(skip).limit(limit);
-    const decksResponse = decks.map((deck) => {
-      return {
-        ...deck.toObject(),
-        hasUnlearnedCard:
-          deck.cards.length > deck.learningCount(req.currentUser!.id),
-      };
-    });
+    const decksResponse = await Promise.all(
+      decks.map(async (deck) => {
+        const learningCount = await deck.learningCount(req.currentUser!.id);
+        return {
+          ...deck.toObject(),
+          hasUnlearnedCard: deck.cards.length > learningCount,
+        };
+      })
+    );
 
     res.status(200).json({
       status: 'success',
