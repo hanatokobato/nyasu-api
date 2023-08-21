@@ -144,21 +144,29 @@ const createAttachment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.file) return next();
 
-    const filename = `${req.file.originalname}-${Date.now()}.jpeg`;
+    let fileName;
+    let fileUrl;
+    if (process.env.NODE_ENV === 'development') {
+      fileName = `resized-${req.file.filename}`;
 
-    if (!fs.existsSync(`files/img/cards`)) {
-      fs.mkdirSync(`files/img/cards`, { recursive: true });
+      if (!fs.existsSync(`files/img/cards`)) {
+        fs.mkdirSync(`files/img/cards`, { recursive: true });
+      }
+      await sharp(req.file.path)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`files/img/cards/${fileName}`);
+      fileUrl = `http://localhost:3000/img/cards/${fileName}`;
+    } else {
+      fileName = req.file.filename;
+      fileUrl = req.file.path;
     }
-    await sharp(req.file.buffer)
-      .toFormat('jpeg')
-      .jpeg({ quality: 90 })
-      .toFile(`files/img/cards/${filename}`);
 
     res.status(201).json({
       status: 'success',
       attachment: {
-        name: filename,
-        path: `/img/cards/${filename}`,
+        name: fileName,
+        path: fileUrl,
       },
     });
   }
