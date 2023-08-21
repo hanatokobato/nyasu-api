@@ -42,11 +42,13 @@ const getDecks = catchAsync(
         };
       })
     );
+    const deckCount = await Deck.count();
 
     res.status(200).json({
       status: 'success',
       decks: decksResponse,
       page,
+      total_page: deckCount / limit,
     });
   }
 );
