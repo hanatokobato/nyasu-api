@@ -86,7 +86,7 @@ const learningCards = catchAsync(
 
     res.status(200).json({
       status: 'success',
-      cards,
+      cards: cards.map((c) => Card.hydrate(c)),
     });
   }
 );
