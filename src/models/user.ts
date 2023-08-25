@@ -9,7 +9,7 @@ export interface UserDoc extends mongoose.Document {
   email: string;
   password: string;
   passwordChangedAt: Date;
-  role: string;
+  role: 'ADMIN' | 'USER';
   isValidPassword: (
     providedPassword: string,
     userPassword: string

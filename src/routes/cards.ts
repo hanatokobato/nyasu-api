@@ -7,21 +7,37 @@ const router = express.Router();
 router
   .route('/')
   .get(authController.protect, cardsController.getCards)
-  .post(cardsController.uploadAudioAttachment, cardsController.createCard);
+  .post(
+    authController.protect,
+    authController.requireAdmin,
+    cardsController.uploadAudioAttachment,
+    cardsController.createCard
+  );
 
-router.route('/random').get(cardsController.randomCards);
+router
+  .route('/random')
+  .get(authController.protect, cardsController.randomCards);
 
-router.route('/learning').get(cardsController.learningCards);
+router
+  .route('/learning')
+  .get(authController.protect, cardsController.learningCards);
 
 router
   .route('/:id')
-  .get(cardsController.showCard)
-  .put(cardsController.uploadAudioAttachment, cardsController.updateCard)
-  .delete(cardsController.deleteCard);
+  .get(authController.protect, cardsController.showCard)
+  .put(
+    authController.protect,
+    authController.requireAdmin,
+    cardsController.uploadAudioAttachment,
+    cardsController.updateCard
+  )
+  .delete(authController.protect, cardsController.deleteCard);
 
 router
   .route('/attachments')
   .post(
+    authController.protect,
+    authController.requireAdmin,
     cardsController.uploadImageAttachment,
     cardsController.createAttachment
   );

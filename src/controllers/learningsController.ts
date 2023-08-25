@@ -33,6 +33,7 @@ const getLearnings = catchAsync(
           $gt: 10 * index,
           $lte: 10 * (index + 1),
         },
+        user_id: req.currentUser!.id,
       });
     });
 
@@ -43,15 +44,21 @@ const getLearnings = catchAsync(
         $gt: current,
         $lte: nextOneHour,
       },
+      user_id: req.currentUser!.id,
     });
     const currReviewCount = await Learning.count({
       next_review_at: {
         $lte: current,
       },
+      user_id: req.currentUser!.id,
     });
-    const upcoming = await Learning.findOne({}, null, {
-      sort: { next_review_at: 1 },
-    });
+    const upcoming = await Learning.findOne(
+      { user_id: req.currentUser!.id },
+      null,
+      {
+        sort: { next_review_at: 1 },
+      }
+    );
 
     res.status(200).json({
       status: 'success',
@@ -113,12 +120,17 @@ const addLearning = catchAsync(
   }
 );
 
-const editLearningsAttributes = async (cardIds: string[], isPassed = true) => {
+const editLearningsAttributes = async (
+  userId: string,
+  cardIds: string[],
+  isPassed = true
+) => {
   const current = new Date();
   const learnings = await Learning.find({
     card_id: {
       $in: cardIds,
     },
+    user_id: userId,
   });
   return learnings.map((learning) => {
     learning.last_reviewed_at = current;
@@ -136,13 +148,12 @@ const editLearningsAttributes = async (cardIds: string[], isPassed = true) => {
 const updateLearnings = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { passed_cards: passedCards, failed_cards: failedCards } = req.body;
-    const current = new Date();
     let editedLearnings: any = [];
     editedLearnings = editedLearnings.concat(
-      await editLearningsAttributes(passedCards, true)
+      await editLearningsAttributes(req.currentUser!.id, passedCards, true)
     );
     editedLearnings = editedLearnings.concat(
-      await editLearningsAttributes(failedCards, false)
+      await editLearningsAttributes(req.currentUser!.id, failedCards, false)
     );
 
     await Learning.bulkSave(editedLearnings);

@@ -10,6 +10,7 @@ declare global {
   interface IUserPayload {
     id: string;
     email: string;
+    role: 'ADMIN' | 'USER';
   }
 
   interface IJwtPayload extends IUserPayload {
