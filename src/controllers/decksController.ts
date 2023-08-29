@@ -31,8 +31,18 @@ const getDecks = catchAsync(
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.perPage) || 10;
     const skip = (page - 1) * limit;
+    const dbQuery = req.query.search?.length
+      ? {
+          $text: {
+            $search: (req.query.search as string) || '*',
+          },
+        }
+      : {};
 
-    const decks = await Deck.find().populate('cards').skip(skip).limit(limit);
+    const decks = await Deck.find(dbQuery)
+      .populate('cards')
+      .skip(skip)
+      .limit(limit);
     const decksResponse = await Promise.all(
       decks.map(async (deck) => {
         const learningCount = await deck.learningCount(req.currentUser!.id);
@@ -42,7 +52,7 @@ const getDecks = catchAsync(
         };
       })
     );
-    const deckCount = await Deck.count();
+    const deckCount = await Deck.count(dbQuery);
 
     res.status(200).json({
       status: 'success',

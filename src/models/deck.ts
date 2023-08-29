@@ -30,6 +30,8 @@ const deckSchema = new mongoose.Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
+deckSchema.index({ name: 'text' });
+
 deckSchema.virtual('photoUrl').get(function () {
   if (!this.photo) return null;
 
