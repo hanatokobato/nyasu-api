@@ -8,6 +8,8 @@ router
   .route('/')
   .get(authController.protect, decksController.getDecks)
   .post(
+    authController.protect,
+    authController.requireAdmin,
     decksController.uploadDeckPhoto,
     decksController.resizePhoto,
     decksController.createDeck
@@ -15,12 +17,14 @@ router
 
 router
   .route('/:id')
-  .get(decksController.showDeck)
+  .get(authController.protect, decksController.showDeck)
   .put(
+    authController.protect,
+    authController.requireAdmin,
     decksController.uploadDeckPhoto,
     decksController.resizePhoto,
     decksController.updateDeck
   )
-  .delete(decksController.deleteDeck);
+  .delete(authController.protect, decksController.deleteDeck);
 
 export { router as decksRouter };

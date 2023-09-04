@@ -107,4 +107,13 @@ const protect = catchAsync(
   }
 );
 
-export { signup, login, logout, protect, currentUser };
+const requireAdmin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.currentUser?.role !== 'ADMIN')
+      return next(new AppError('Unauthorized.', 401));
+
+    next();
+  }
+);
+
+export { signup, login, logout, protect, currentUser, requireAdmin };
