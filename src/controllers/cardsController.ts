@@ -38,11 +38,13 @@ const getCards = catchAsync(
     const cards = await Card.find({ deck_id: req.query.deck_id })
       .skip(skip)
       .limit(limit);
+    const cardCount = await Card.count({ deck_id: req.query.deck_id });
 
     res.status(200).json({
       status: 'success',
       cards,
       page,
+      total_page: cardCount / limit,
     });
   }
 );
