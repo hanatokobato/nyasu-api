@@ -3,6 +3,7 @@ import { catchAsync } from '../utils/catchAsync';
 import { Learning } from '../models/learning';
 import moment from 'moment';
 import { Card } from '../models/card';
+import { shuffle } from 'lodash';
 
 interface ILearningParams {
   card_id?: string;
@@ -81,7 +82,7 @@ const getReviews = catchAsync(
 
     res.status(200).json({
       status: 'success',
-      reviews,
+      reviews: shuffle(reviews),
     });
   }
 );
