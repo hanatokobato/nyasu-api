@@ -6,12 +6,12 @@ import { Card } from '../models/card';
 import { shuffle } from 'lodash';
 
 interface ILearningParams {
-  card_id?: string;
+  card_ids?: string[];
   deck_id?: string;
 }
 
 const learningParams: (req: Request) => ILearningParams = (req: Request) => {
-  const allowedFields = ['card_id', 'deck_id'];
+  const allowedFields = ['card_ids', 'deck_id'];
   const permittedParams: { [key: string]: any } = {};
   Object.keys(req.body).forEach((el) => {
     if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
@@ -99,21 +99,20 @@ const addLearning = catchAsync(
       user_id: req.currentUser?.id,
     };
 
-    if (params.deck_id && !params.card_id) {
+    let insertData;
+    if (params.deck_id && !params.card_ids) {
       const cards = await Card.find({ deck_id: params.deck_id });
-      const insertData = cards.map((card) => {
+      insertData = cards.map((card) => {
         return { ...params, card_id: card._id };
       });
-      await Learning.insertMany(insertData, { ordered: false }).catch(
-        (e: any) => {}
-      );
-    } else {
-      await Learning.create({
-        ...learningParams(req),
-        added_at,
-        next_review_at,
+    } else if (params.card_ids) {
+      insertData = params.card_ids.map((cardId) => {
+        return { ...params, card_id: cardId };
       });
     }
+    await Learning.insertMany(insertData, { ordered: false }).catch(
+      (e: any) => {}
+    );
 
     res.status(201).json({
       status: 'success',
