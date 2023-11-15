@@ -62,11 +62,13 @@ const getLearnings = catchAsync(
     );
 
     res.status(200).json({
-      status: 'success',
-      word_levels: wordLevels,
-      curr_review_count: currReviewCount,
-      wait_review_count: waitReviewCount,
-      upcoming: upcoming?.next_review_at,
+      success: true,
+      data: {
+        word_levels: wordLevels,
+        curr_review_count: currReviewCount,
+        wait_review_count: waitReviewCount,
+        upcoming: upcoming?.next_review_at,
+      },
     });
   }
 );
