@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { catchAsync } from '../utils/catchAsync';
 import { Learning } from '../models/learning';
 import moment from 'moment';
-import { Card } from '../models/card';
+import { Card, CardDoc } from '../models/card';
 import { shuffle } from 'lodash';
 
 interface ILearningParams {
@@ -62,11 +62,13 @@ const getLearnings = catchAsync(
     );
 
     res.status(200).json({
-      status: 'success',
-      word_levels: wordLevels,
-      curr_review_count: currReviewCount,
-      wait_review_count: waitReviewCount,
-      upcoming: upcoming?.next_review_at,
+      success: true,
+      data: {
+        word_levels: wordLevels,
+        curr_review_count: currReviewCount,
+        wait_review_count: waitReviewCount,
+        upcoming: upcoming?.next_review_at,
+      },
     });
   }
 );
@@ -78,11 +80,13 @@ const getReviews = catchAsync(
       next_review_at: {
         $lte: current,
       },
-    }).populate('card');
+    }).populate<{ card: CardDoc }>('card');
 
     res.status(200).json({
-      status: 'success',
-      reviews: shuffle(reviews),
+      success: true,
+      data: {
+        cards: shuffle(reviews).map((r) => r.card),
+      },
     });
   }
 );
