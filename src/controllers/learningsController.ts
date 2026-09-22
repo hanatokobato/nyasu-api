@@ -10,6 +10,8 @@ interface ILearningParams {
   deck_id?: string;
 }
 
+const WORD_LEVELS = ['level_1', 'level_2', 'level_3', 'level_4', 'level_5'];
+
 const learningParams: (req: Request) => ILearningParams = (req: Request) => {
   const allowedFields = ['card_ids', 'deck_id'];
   const permittedParams: { [key: string]: any } = {};
@@ -21,21 +23,23 @@ const learningParams: (req: Request) => ILearningParams = (req: Request) => {
 
 const getLearnings = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const wordLevels: { [key: string]: number } = {
-      level_1: 0,
-      level_2: 0,
-      level_3: 0,
-      level_4: 0,
-      level_5: 0,
-    };
-    Object.keys(wordLevels).forEach(async (level, index) => {
-      wordLevels[level] = await Learning.count({
-        remember_times: {
-          $gt: 10 * index,
-          $lte: 10 * (index + 1),
-        },
-        user_id: req.currentUser!.id,
-      });
+    const userId = req.currentUser!.id;
+
+    // Level n holds the words remembered between 10(n-1) and 10n times.
+    const levelCounts = await Promise.all(
+      WORD_LEVELS.map((level, index) =>
+        Learning.count({
+          remember_times: {
+            $gt: 10 * index,
+            $lte: 10 * (index + 1),
+          },
+          user_id: userId,
+        })
+      )
+    );
+    const wordLevels: { [key: string]: number } = {};
+    WORD_LEVELS.forEach((level, index) => {
+      wordLevels[level] = levelCounts[index];
     });
 
     const current = new Date();
@@ -45,21 +49,17 @@ const getLearnings = catchAsync(
         $gt: current,
         $lte: nextOneHour,
       },
-      user_id: req.currentUser!.id,
+      user_id: userId,
     });
     const currReviewCount = await Learning.count({
       next_review_at: {
         $lte: current,
       },
-      user_id: req.currentUser!.id,
+      user_id: userId,
     });
-    const upcoming = await Learning.findOne(
-      { user_id: req.currentUser!.id },
-      null,
-      {
-        sort: { next_review_at: 1 },
-      }
-    );
+    const upcoming = await Learning.findOne({ user_id: userId }, null, {
+      sort: { next_review_at: 1 },
+    });
 
     res.status(200).json({
       success: true,
@@ -80,12 +80,16 @@ const getReviews = catchAsync(
       next_review_at: {
         $lte: current,
       },
-    }).populate<{ card: CardDoc }>('card');
+      user_id: req.currentUser!.id,
+    }).populate<{ card: CardDoc | null }>('card');
 
     res.status(200).json({
       success: true,
       data: {
-        cards: shuffle(reviews).map((r) => r.card),
+        // A learning outlives its card when the card is deleted; skip those.
+        cards: shuffle(reviews)
+          .map((r) => r.card)
+          .filter((card): card is CardDoc => card !== null),
       },
     });
   }
@@ -119,7 +123,8 @@ const addLearning = catchAsync(
     );
 
     res.status(201).json({
-      status: 'success',
+      success: true,
+      data: {},
     });
   }
 );
@@ -162,8 +167,9 @@ const updateLearnings = catchAsync(
 
     await Learning.bulkSave(editedLearnings);
 
-    res.status(204).json({
-      status: 'success',
+    res.status(200).json({
+      success: true,
+      data: {},
     });
   }
 );

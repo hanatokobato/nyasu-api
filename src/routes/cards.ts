@@ -31,7 +31,11 @@ router
     cardsController.uploadAudioAttachment,
     cardsController.updateCard
   )
-  .delete(authController.protect, cardsController.deleteCard);
+  .delete(
+    authController.protect,
+    authController.requireAdmin,
+    cardsController.deleteCard
+  );
 
 router
   .route('/attachments')

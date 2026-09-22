@@ -24,7 +24,7 @@ const createSendToken = (
   };
 
   res.status(statusCode).json({
-    status: 'success',
+    success: true,
     token,
     data: {
       user,
@@ -69,11 +69,11 @@ const login = catchAsync(
 
 const logout = (req: Request, res: Response) => {
   req.session = null;
-  res.status(200).json({ status: 'success' });
+  res.status(200).json({ success: true });
 };
 
 const currentUser = (req: Request, res: Response) => {
-  res.status(200).json({ status: 'success', data: { user: req.currentUser } });
+  res.status(200).json({ success: true, data: { user: req.currentUser } });
 };
 
 const protect = catchAsync(
@@ -90,10 +90,17 @@ const protect = catchAsync(
 
     if (!token) return next(new AppError('Please log in and try again!', 401));
 
-    const decoded = (await promisify<string, Secret>(jwt.verify)(
-      token,
-      process.env.JWT_SECRET as Secret
-    )) as unknown as IJwtPayload;
+    let decoded: IJwtPayload;
+    try {
+      decoded = (await promisify<string, Secret>(jwt.verify)(
+        token,
+        process.env.JWT_SECRET as Secret
+      )) as unknown as IJwtPayload;
+    } catch (err) {
+      return next(
+        new AppError('Invalid or expired token! Please log in again.', 401)
+      );
+    }
 
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) return next(new AppError('The token is invalid!', 401));
