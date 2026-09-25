@@ -4,21 +4,28 @@ import { storage as deckStorage } from '../storage/deckPhotoStorage';
 import { storage as cardPhotoStorage } from '../storage/cardPhotoStorage';
 import { storage as cardAudioStorage } from '../storage/cardAudioStorage';
 import { AppError } from './appError';
+import { withJsonParts } from './jsonParts';
 
 enum FILE_TYPE {
   image = 'image',
   audio = 'audio',
 }
 
+// Object-valued card properties the OpenAPI client sends as JSON parts.
+const CARD_JSON_PARTS = ['content', 'fields'];
+
 const multerFilter =
-  (fileType: FILE_TYPE) =>
+  (fileType: FILE_TYPE, jsonParts: string[] = []) =>
   (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-    if (file.mimetype.startsWith(fileType)) {
+    if (
+      jsonParts.includes(file.fieldname) ||
+      file.mimetype.startsWith(fileType)
+    ) {
       cb(null, true);
     } else {
       cb(
         new AppError(
-          'Your file format is not supported! Please upload only images.',
+          `Your file format is not supported! Please upload only ${fileType} files.`,
           400
         )
       );
@@ -36,8 +43,8 @@ const uploadCardPhoto = multer({
 });
 
 const uploadCardAudio = multer({
-  storage: cardAudioStorage,
-  fileFilter: multerFilter(FILE_TYPE.audio),
+  storage: withJsonParts(cardAudioStorage, CARD_JSON_PARTS),
+  fileFilter: multerFilter(FILE_TYPE.audio, CARD_JSON_PARTS),
 });
 
-export { uploadCardAudio, uploadDeckPhoto, uploadCardPhoto };
+export { uploadCardAudio, uploadDeckPhoto, uploadCardPhoto, CARD_JSON_PARTS };

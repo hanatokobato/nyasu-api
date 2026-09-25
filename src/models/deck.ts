@@ -9,6 +9,8 @@ export interface DeckDoc extends mongoose.Document {
   name: string;
   description: string;
   photo: string;
+  photoUrl: string | null;
+  createdAt: Date;
   cards: CardDoc[];
   learningCount: (userId: string) => number;
 }

@@ -25,6 +25,10 @@ router
     decksController.resizePhoto,
     decksController.updateDeck
   )
-  .delete(authController.protect, decksController.deleteDeck);
+  .delete(
+    authController.protect,
+    authController.requireAdmin,
+    decksController.deleteDeck
+  );
 
 export { router as decksRouter };

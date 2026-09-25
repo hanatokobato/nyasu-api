@@ -1,29 +1,54 @@
-import fs from 'fs';
 import sharp from 'sharp';
 import { NextFunction, Request, Response } from 'express';
 import { Card } from '../models/card';
 import { catchAsync } from '../utils/catchAsync';
-import { uploadCardPhoto, uploadCardAudio } from '../utils/upload';
+import {
+  uploadCardPhoto,
+  uploadCardAudio,
+  CARD_JSON_PARTS,
+} from '../utils/upload';
 import { Learning } from '../models/learning';
 import mongoose from 'mongoose';
+import { AppError } from '../utils/appError';
+
+// Card routes take the audio as `file` next to the JSON parts, so multer runs
+// in `.fields()` mode and the upload lands in req.files rather than req.file.
+const uploadedFile = (req: Request) =>
+  Array.isArray(req.files) ? undefined : req.files?.file?.[0];
+
+// `content` and `fields` arrive either already parsed (bracket-notation
+// fields, or JSON parts a browser marks as files and withJsonParts decodes)
+// or as JSON strings from clients that send blob parts without a filename.
+const parseJsonField = (name: string, value: unknown) => {
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    throw new AppError(`${name} must be valid JSON.`, 400);
+  }
+};
 
 const cardParams = (req: Request) => {
-  const allowedFields = ['deck_id', 'content', 'fields'];
+  const allowedFields = ['deck_id', ...CARD_JSON_PARTS];
   const permittedParams: { [key: string]: any } = {};
   Object.keys(req.body).forEach((el) => {
-    if (allowedFields.includes(el)) permittedParams[el] = req.body[el];
+    if (!allowedFields.includes(el)) return;
+    permittedParams[el] = CARD_JSON_PARTS.includes(el)
+      ? parseJsonField(el, req.body[el])
+      : req.body[el];
   });
-  if (req.file) {
+  const file = uploadedFile(req);
+  if (file) {
     let filePath;
     if (process.env.NODE_ENV === 'development') {
-      const splitedPath = req.file.path.split('/');
+      const splitedPath = file.path.split('/');
       splitedPath.shift();
       filePath = splitedPath.join('/');
     } else {
-      filePath = req.file.path;
+      filePath = file.path;
     }
     permittedParams['attachments'] = [
-      { alt: req.file.filename, file_url: filePath },
+      { alt: file.filename, file_url: filePath },
     ];
   }
   return permittedParams;
@@ -32,7 +57,7 @@ const cardParams = (req: Request) => {
 const getCards = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.perPage) || 10;
+    const limit = Number(req.query.per_page) || 10;
     const skip = (page - 1) * limit;
 
     const cards = await Card.find({ deck_id: req.query.deck_id })
@@ -41,10 +66,12 @@ const getCards = catchAsync(
     const cardCount = await Card.count({ deck_id: req.query.deck_id });
 
     res.status(200).json({
-      status: 'success',
-      cards,
-      page,
-      total_page: cardCount / limit,
+      success: true,
+      data: {
+        cards,
+        page,
+        total_page: Math.ceil(cardCount / limit),
+      },
     });
   }
 );
@@ -56,8 +83,10 @@ const randomCards = catchAsync(
     const cards = await Card.aggregate().sample(limit);
 
     res.status(200).json({
-      status: 'success',
-      cards,
+      success: true,
+      data: {
+        cards: cards.map((c) => Card.hydrate(c)),
+      },
     });
   }
 );
@@ -68,6 +97,7 @@ const learningCards = catchAsync(
 
     const learnedCards = await Learning.find({
       deck_id: req.query.deck_id,
+      user_id: req.currentUser!.id,
     }).select('card_id -_id');
     const cards = await Card.aggregate([
       {
@@ -87,8 +117,10 @@ const learningCards = catchAsync(
     ]).sample(limit);
 
     res.status(200).json({
-      status: 'success',
-      cards: cards.map((c) => Card.hydrate(c)),
+      success: true,
+      data: {
+        cards: cards.map((c) => Card.hydrate(c)),
+      },
     });
   }
 );
@@ -96,64 +128,65 @@ const learningCards = catchAsync(
 const showCard = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const card = await Card.findById(req.params.id);
+    if (!card) return next(new AppError('Card not found!', 404));
 
     res.status(200).json({
-      status: 'success',
-      card,
+      success: true,
+      data: { card },
     });
   }
 );
 
 const createCard = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const deck = await Card.create(cardParams(req));
+    const card = await Card.create(cardParams(req));
 
     res.status(201).json({
-      status: 'success',
-      deck,
+      success: true,
+      data: { card },
     });
   }
 );
 
 const updateCard = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const deck = await Card.findByIdAndUpdate(req.params.id, cardParams(req), {
+    const card = await Card.findByIdAndUpdate(req.params.id, cardParams(req), {
       new: true,
       runValidators: true,
     });
+    if (!card) return next(new AppError('Card not found!', 404));
 
-    res.status(202).json({
-      status: 'success',
-      deck,
+    res.status(200).json({
+      success: true,
+      data: { card },
     });
   }
 );
 
 const deleteCard = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const deck = await Card.findByIdAndDelete(req.params.id);
+    const card = await Card.findByIdAndDelete(req.params.id);
+    if (!card) return next(new AppError('Card not found!', 404));
 
-    res.status(204).json({
-      status: 'success',
-    });
+    res.status(204).end();
   }
 );
 
 const uploadImageAttachment = uploadCardPhoto.single('file');
-const uploadAudioAttachment = uploadCardAudio.single('file');
+const uploadAudioAttachment = uploadCardAudio.fields([
+  { name: 'file', maxCount: 1 },
+  ...CARD_JSON_PARTS.map((name) => ({ name, maxCount: 1 })),
+]);
 
 const createAttachment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.file) return next();
+    if (!req.file) return next(new AppError('No file uploaded!', 400));
 
     let fileName;
     let fileUrl;
     if (process.env.NODE_ENV === 'development') {
       fileName = `resized-${req.file.filename}`;
 
-      if (!fs.existsSync(`files/img/cards`)) {
-        fs.mkdirSync(`files/img/cards`, { recursive: true });
-      }
       await sharp(req.file.path)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
@@ -165,10 +198,12 @@ const createAttachment = catchAsync(
     }
 
     res.status(201).json({
-      status: 'success',
-      attachment: {
-        name: fileName,
-        path: fileUrl,
+      success: true,
+      data: {
+        attachment: {
+          name: fileName,
+          path: fileUrl,
+        },
       },
     });
   }

@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
+import { diskStorageIn } from './diskStorage';
 
 let storage: multer.StorageEngine | CloudinaryStorage;
 
@@ -25,14 +26,7 @@ if (process.env.NODE_ENV === 'production') {
     },
   });
 } else {
-  storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'files/audio/cards');
-    },
-    filename: (req, file, cb) => {
-      cb(null, `${Date.now()}-${file.originalname}`);
-    },
-  });
+  storage = diskStorageIn('files/audio/cards');
 }
 
 export { storage };
