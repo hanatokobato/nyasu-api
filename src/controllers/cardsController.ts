@@ -1,4 +1,3 @@
-import fs from 'fs';
 import sharp from 'sharp';
 import { NextFunction, Request, Response } from 'express';
 import { Card } from '../models/card';
@@ -188,9 +187,6 @@ const createAttachment = catchAsync(
     if (process.env.NODE_ENV === 'development') {
       fileName = `resized-${req.file.filename}`;
 
-      if (!fs.existsSync(`files/img/cards`)) {
-        fs.mkdirSync(`files/img/cards`, { recursive: true });
-      }
       await sharp(req.file.path)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })

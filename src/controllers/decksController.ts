@@ -1,4 +1,3 @@
-import fs from 'fs';
 import sharp from 'sharp';
 import { NextFunction, Request, Response } from 'express';
 import { Deck, DeckDoc } from '../models/deck';
@@ -128,9 +127,6 @@ const resizePhoto = catchAsync(
 
     req.file.filename = `resized-${req.file.filename}`;
 
-    if (!fs.existsSync(`files/img/decks`)) {
-      fs.mkdirSync(`files/img/decks`, { recursive: true });
-    }
     await sharp(req.file.path)
       .resize(500, 500)
       .toFile(`files/img/decks/${req.file.filename}`);
