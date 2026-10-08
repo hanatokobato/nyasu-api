@@ -49,7 +49,12 @@ const start = async () => {
   try {
     await mongoose.connect(process.env.DATABASE_URL!);
   } catch (err) {
+    // Mongoose does not retry the initial connection, so a server that kept
+    // running here would answer every request with a buffering timeout.
+    // Exiting lets the platform restart the process until the database is
+    // reachable again (an idle Atlas cluster pauses itself, for instance).
     console.error(err);
+    process.exit(1);
   }
 
   app.listen(3000, () => {
